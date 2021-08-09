@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class AlternateStreamReader {
     private final String _streamName;
@@ -28,7 +29,7 @@ public class AlternateStreamReader {
         return _streamName;
     }
 
-    // Simple test for windows
+    // Test
     public static void main(String[] args) {
         AlternateStreamReader streamReader = new AlternateStreamReader(Paths.get("C:\\Users\\{c}\\Downloads\\Unhealthy-Dying-Mod-1.17.1.jar"), "ads");
         System.out.println("Detecting potentially reposted mod: Unhealthy-Dying-Mod-1.17.1.jar");
@@ -72,9 +73,14 @@ public class AlternateStreamReader {
         for (String parsedAD : parsedADS) System.out.println(parsedAD);
 
         String zoneIdentPath = path + ":Zone.Identifier:$DATA";
-        List<String> contents = null;
+        List<String> contents = new ArrayList<>();
         try {
-            contents = Files.readAllLines(Path.of(zoneIdentPath), Charset.defaultCharset());
+            File file = new File("test.txt:hidden");
+            try (BufferedReader bf = new BufferedReader( new FileReader(file))) {
+                contents = bf.lines().collect(Collectors.toList());
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

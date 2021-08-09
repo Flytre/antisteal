@@ -1,0 +1,41 @@
+<html>
+<head>
+    <title>Stolen Mod - %jar_name%</title>
+    <link rel="stylesheet" href="https://cdn.rawgit.com/Chalarangelo/mini.css/v3.0.1/dist/mini-default.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        table {
+          overflow-x: hidden !important; /* Hide scrollbars */
+        }
+    </style>
+</head>
+<body>
+<div align="center">
+    <h1>Antisteal has detected a stolen mod!</h1>
+    <p>Don't worry, this isn't your fault. You have downloaded a mod from an untrusted source, so we closed your Minecraft to prevent malware from being ran.</p>
+    <hr>
+    <table>
+        <caption>Incident Report</caption>
+        <tbody>
+        <tr>
+            <td>Jar Location</td>
+            <td>%jar_loc%</td>
+        </tr>
+        <tr>
+            <td>Downloaded From</td>
+            <td>%jar_downloaded%</td>
+        </tr>
+        <tr>
+            <td>Date</td>
+            <td>%date%</td>
+        </tr>
+        </tbody>
+    </table>
+    <br>
+    <p>The trusted sources for this mod are:</p>
+    <ul>
+        %ul_content%
+    </ul>
+</div>
+</body>
+</html>

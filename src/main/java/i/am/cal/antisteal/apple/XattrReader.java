@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
@@ -16,8 +17,9 @@ public class XattrReader {
         this._path = path;
     }
 
+    // Test
     public static void main(String[] args) {
-        XattrReader reader = new XattrReader(Paths.get("/Users/{c}/Downloads/Dynamic-FPS-Mod-Fabric-1.17.1.jar"));
+        XattrReader reader = new XattrReader(Paths.get("/Users/nick/Downloads/Dynamic-FPS-Mod-Fabric-1.17.1.jar"));
         Properties prop = reader.read();
         System.out.println(prop.get("HostUrl"));
     }
@@ -28,20 +30,13 @@ public class XattrReader {
 
     public Properties read() {
         Properties prop = new Properties();
-        UserDefinedFileAttributeView view = Files.getFileAttributeView(_path, UserDefinedFileAttributeView.class);
-        ByteBuffer buffer = null;
+        Object view = null;
         try {
-            buffer = ByteBuffer.allocate(view.size("com.apple.metadata:kMDItemWhereFroms"));
+            view = Files.getAttribute(_path, "UserDefinedFileAttributeView:kMDItemWhereFroms", LinkOption.NOFOLLOW_LINKS);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        try {
-            view.read("com.apple.metadata:kMDItemWhereFroms", buffer);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        buffer.flip();
-        prop.setProperty("HostUrl", Charset.defaultCharset().decode(buffer).toString());
+        prop.setProperty("HostUrl", (String) view);
         return prop;
     }
 }

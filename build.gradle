@@ -7,19 +7,8 @@ version '1.0.0'
 
 repositories {
     mavenCentral()
-    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
-    api "com.github.IsNull:xattrj:-SNAPSHOT"
-}
 
-jar {
-    manifest {
-        attributes "Main-Class": "i.am.cal.antisteal.Antisteal"
-    }
-
-    from {
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-    }
 }

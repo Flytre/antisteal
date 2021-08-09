@@ -17,7 +17,7 @@ public class XattrReader {
     }
 
     public static void main(String[] args) {
-        XattrReader reader = new XattrReader(Paths.get("/Users/nick/Downloads/Dynamic-FPS-Mod-Fabric-1.17.1.jar"));
+        XattrReader reader = new XattrReader(Paths.get("/Users/{c}/Downloads/Dynamic-FPS-Mod-Fabric-1.17.1.jar"));
         Properties prop = reader.read();
         System.out.println(prop.get("HostUrl"));
     }

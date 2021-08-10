@@ -1,51 +1,69 @@
 package i.am.cal.antisteal;
 
-import i.am.cal.antisteal.apple.XattrReader;
-import i.am.cal.antisteal.windows.AlternateStreamReader;
+import i.am.cal.antisteal.retriever.MacOSUrlRetriever;
+import i.am.cal.antisteal.retriever.UrlRetriever;
+import i.am.cal.antisteal.retriever.WindowsUrlRetriever;
 
 import java.awt.*;
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Properties;
+import java.util.*;
 
 public class Antisteal {
-    public interface CloseEvent {
-        public void close();
-    }
     /**
      * Check if the mod is considered stolen.
-     * @param pathToFile       Path to your mod file. See documentation on how to get.
-     * @param closeEvent       See docs.
-     * @param whitelist        The whitelisted domains. See documentation for format and storage.
+     *
+     * @param pathToFile Path to your mod file. See documentation on how to get.
+     * @param closeEvent See docs.
+     * @param whitelist  The whitelisted domains. See documentation for format and storage.
      */
-    public static void Check(Path pathToFile, CloseEvent closeEvent, HashMap<String, String> whitelist) {
-        Properties props = new Properties();
+    public static void check(Path pathToFile, CloseEvent closeEvent, Map<String, String> whitelist) {
+        UrlRetriever retriever = null;
         if (OSValidator.isWindows()) {
-            AlternateStreamReader streamReader = new AlternateStreamReader(pathToFile, "ads");
-            props = streamReader.read();
+            retriever = new WindowsUrlRetriever(pathToFile);
         }
         if (OSValidator.isMac()) {
-            XattrReader streamReader = new XattrReader(pathToFile);
-            props = streamReader.read();
+            retriever = new MacOSUrlRetriever(pathToFile);
         }
         if (OSValidator.isUnix() || OSValidator.isSolaris() || OSValidator.getOS().equals("err")) {
             return;
         }
 
-        if (!whitelist.containsValue(props.get("HostUrl"))) {
-            FileInputStream stream = (FileInputStream) Antisteal.class.getResourceAsStream("stolen.html");
+        assert retriever != null;
+        boolean valid = false;
 
-            File temp = null;
+        if (retriever.getUrls().length == 0)
+            valid = true;
+
+        //If any of the found urls are whitelisted, then its valid
+        for (var entry : whitelist.entrySet()) {
+            for (var url : retriever.getUrls())
+                if (url.contains(entry.getValue())) {
+                    valid = true;
+                    break;
+                }
+        }
+
+
+
+        if (!valid) {
+            FileInputStream stream = null;
+
+            try {
+                stream = new FileInputStream(Antisteal.class.getResource("/stolen.html").getFile());
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+
+            File temp;
             try {
                 temp = File.createTempFile("stolenmod", ".html");
                 FileWriter fileWriter = new FileWriter(temp);
                 String content = getFileContent(stream, "utf-8");
                 content = content.replaceAll("%jar_name%", pathToFile.getFileName().toString());
                 content = content.replaceAll("%jar_loc%", "<code>" + pathToPortableString(pathToFile) + "</code>");
-                content = content.replaceAll("%jar_downloaded%", "dl.9minecraft.net");
+                content = content.replaceAll("%jar_downloaded%", String.join(", ",retriever.getUrls()));
                 content = content.replaceAll("%date%", new Date().toString());
 
                 var ref = new Object() {
@@ -113,6 +131,7 @@ public class Antisteal {
             e.printStackTrace();
         }
     }
+
     private static String getFileContent(
             FileInputStream fis,
             String encoding) throws IOException {
@@ -126,20 +145,18 @@ public class Antisteal {
             return sb.toString();
         }
     }
-    private static String pathToPortableString(Path p)
-    {
+
+    private static String pathToPortableString(Path p) {
         StringBuilder sb = new StringBuilder();
         boolean first = true;
         Path root = p.getRoot();
-        if (root != null)
-        {
-            sb.append(root.toString().replace('\\','/'));
+        if (root != null) {
+            sb.append(root.toString().replace('\\', '/'));
             /* root elements appear to contain their
              * own ending separator, so we don't set "first" to false
              */
         }
-        for (Path element : p)
-        {
+        for (Path element : p) {
             if (first)
                 first = false;
             else
@@ -147,5 +164,10 @@ public class Antisteal {
             sb.append(element.toString());
         }
         return sb.toString();
+    }
+
+    @FunctionalInterface
+    public interface CloseEvent {
+        void close();
     }
 }
